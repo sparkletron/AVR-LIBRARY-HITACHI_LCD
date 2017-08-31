@@ -3,7 +3,7 @@ ARCHIVE = libLCD.a
 AVR_CC = avr-gcc
 AVR_ARCHIVE = avr-ar
 AVR_CFLAGS = -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega328p -DF_CPU=16000000UL
-AVR_INCLUDE = -I ../COMMON_DEFINES
+AVR_INCLUDE = -I AVR-LIBRARY-COMMON_DEFINES
 AVR_AFLAGS = -r
 AVR_OBJECTS = $(SOURCES:.c=.o)
 

@@ -1,0 +1,3 @@
+[submodule "AVR-LIBRARY-COMMON_DEFINES"]
+	path = AVR-LIBRARY-COMMON_DEFINES
+	url = https://github.com/electroCupcake/AVR-LIBRARY-COMMON_DEFINES.git
