@@ -38,8 +38,11 @@ void enablePulse();
 //setup LCD screen for 4 wire mode Write Only
 void lcdInitialize(volatile uint8_t *data_port,  uint8_t screenSize, uint8_t width, uint8_t precision, uint8_t base)
 {
-	char bufSREG = SREG;
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
 	cli();
+
 	lcd.screenSize = screenSize;
 	lcd.width = width;
 	lcd.precision = precision;
@@ -77,13 +80,17 @@ void lcdInitialize(volatile uint8_t *data_port,  uint8_t screenSize, uint8_t wid
 	//setup LCD entry mode
 	lcd.entryModeSet = (LCD_ENTRYMODESET | LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT);
 	write(lcd.entryModeSet, INS_REG);
-	SREG = bufSREG;
+
+	SREG = tmpSREG;
 }
 //print string array to display
 void print(char *message)
 {
-	char bufSREG = SREG;
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
 	cli();
+
 	//as long as pointer isn't pointing to null
 	while(*message != '\0')
 	{
@@ -92,145 +99,254 @@ void print(char *message)
 		message++;
 
 	}
-	SREG = bufSREG;
+	SREG = tmpSREG;
 }
 
 void printSpecial(uint8_t message)
 {
-	char bufSREG = SREG;
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
 	cli();
 
 	//write current character
 	write(message, DATA_REG);
 
-	SREG = bufSREG;
+	SREG = tmpSREG;
 }
 
 //convert ints to string
 void printInt(int number)
 {
-	char bufSREG = SREG;
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
 	cli();
 
 	char buffer[lcd.screenSize];
 
 	print(ltoa(number, buffer, lcd.base));
 
-	SREG = bufSREG;
+	SREG = tmpSREG;
 }
 
 //convert doubles to string
 void printDec(double number)
 {
-	char bufSREG = SREG;
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
 	cli();
 
 	char buffer[lcd.screenSize];
 
 	print(dtostrf(number, lcd.width, lcd.base, buffer));
 
-	SREG = bufSREG;
+	SREG = tmpSREG;
 }
 
 //shift display to the left by one character
 void scrollDisplayLeft()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
   write((LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVELEFT), INS_REG);
+
+	SREG = tmpSREG;
 }
 
 //shift display to the right by one character
 void scrollDisplayRight()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
   write((LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVERIGHT), INS_REG);
+
+	SREG = tmpSREG;
 }
 
 //clear display, also sets cursor at home position, needs a long delay to work.
 void clear()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
 	write(LCD_CLEARDISPLAY, INS_REG);
 	DELAY_MS(2);
+
+	SREG = tmpSREG;
 }
 
 //set cursor back to home position (0,0)
 void home()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
 	write(LCD_RETURNHOME, INS_REG);
 	DELAY_MS(2);
+
+	SREG = tmpSREG;
 }
 
 //turn off dispaly
 void displayOff()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
 	lcd.displaySetting &= ~LCD_DISPLAYON;
 	write(lcd.displaySetting, INS_REG);
+
+	SREG = tmpSREG;
 }
 
 //turn on display
 void displayOn()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
 	lcd.displaySetting |= LCD_DISPLAYON;
 	write(lcd.displaySetting, INS_REG);
+
+	SREG = tmpSREG;
 }
 
 //turn off cursor
 void cursorOff()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
 	lcd.displaySetting &= ~LCD_CURSORON;
 	write(lcd.displaySetting, INS_REG);
+
+	SREG = tmpSREG;
 }
 
 //turn on cursor
 void cursorOn()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
 	lcd.displaySetting |= LCD_CURSORON;
 	write(lcd.displaySetting, INS_REG);
+
+	SREG = tmpSREG;
 }
 
 //turn off blinking cursor
 void blinkOff()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
 	lcd.displaySetting &= ~LCD_BLINKON;
 	write(lcd.displaySetting, INS_REG);
+
+	SREG = tmpSREG;
 }
 
 //turn of blinking cursor
 void blinkOn()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
 	lcd.displaySetting |= LCD_BLINKON;
 	write(lcd.displaySetting, INS_REG);
+
+	SREG = tmpSREG;
 }
 
 //set text to flow Left to Right
 void leftToRight()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
 	lcd.entryModeSet |= LCD_ENTRYLEFT;
 	write(lcd.entryModeSet, INS_REG);
+
+	SREG = tmpSREG;
 }
 
 //set text to flow Right to Left
 void rightToLeft()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
 	lcd.entryModeSet &= ~LCD_ENTRYLEFT;
 	write(lcd.entryModeSet, INS_REG);
+
+	SREG = tmpSREG;
 }
 
 // This will 'right justify' text from the cursor
 void autoscrollOn()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
 	lcd.entryModeSet |= LCD_ENTRYSHIFTINCREMENT;
 	write(lcd.entryModeSet, INS_REG);
+
+	SREG = tmpSREG;
 }
 
 // This will 'left justify' text from the cursor
 void autoscrollOff()
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
 	lcd.entryModeSet &= ~LCD_ENTRYSHIFTINCREMENT;
 	write(lcd.entryModeSet, INS_REG);
+
+	SREG = tmpSREG;
 }
 
 //allows a cursor to be set, row is defined and col is used as an offset.
 void setCursor(uint8_t row, uint8_t col)
 {
+	uint8_t tmpSREG = 0;
+
+	tmpSREG = SREG;
+	cli();
+
 	switch(row)
 	{
 		//line 2
@@ -251,13 +367,13 @@ void setCursor(uint8_t row, uint8_t col)
 			write((LCD_SETDDRAMADDR | (col + 0x00)), INS_REG);
 			break;
 	}
+
+	SREG = tmpSREG;
 }
 
 //private command used to write data to data lines
 void write(uint8_t data, int regSelection)
 {
-	char bufSREG = SREG;
-	cli();
 	//instruction or data mode
 	if (regSelection)
 		//data mode
@@ -275,7 +391,6 @@ void write(uint8_t data, int regSelection)
 	*(lcd.PORT) &= ((MASK_8BIT_FF << 4) | data);
 	//latch data
 	enablePulse();
-	SREG = bufSREG;
 }
 
 //routine to pulse enable pin to latch data
