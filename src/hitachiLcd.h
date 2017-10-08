@@ -72,7 +72,7 @@
 #define DELAY_US(x) _delay_us(x)
 
 //initializes port and screen for 4 bit mode
-void lcdInitialize(volatile uint8_t *data_port, uint8_t screenSize, uint8_t width, uint8_t precision, uint8_t base);
+void initLCD(volatile uint8_t *data_port, uint8_t screenSize, uint8_t width, uint8_t precision, uint8_t base);
 //print
 void print(char *);
 void printInt(int);

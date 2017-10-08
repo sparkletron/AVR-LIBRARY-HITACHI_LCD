@@ -36,7 +36,7 @@ void write(uint8_t, int);
 void enablePulse();
 
 //setup LCD screen for 4 wire mode Write Only
-void lcdInitialize(volatile uint8_t *data_port,  uint8_t screenSize, uint8_t width, uint8_t precision, uint8_t base)
+void initLCD(volatile uint8_t *data_port,  uint8_t screenSize, uint8_t width, uint8_t precision, uint8_t base)
 {
 	uint8_t tmpSREG = 0;
 
