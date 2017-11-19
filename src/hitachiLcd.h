@@ -74,40 +74,40 @@
 //initializes port and screen for 4 bit mode
 void initLCD(volatile uint8_t *data_port, uint8_t screenSize, uint8_t width, uint8_t precision, uint8_t base);
 //print
-void print(char *);
-void printInt(int);
-void printDec(double);
-void printSpecial(uint8_t);
+void printLCD(char *);
+void printIntLCD(int);
+void printDecLCD(double);
+void printSpecialLCD(uint8_t);
 //set cursor to a position on screen (columns by rows)
-void setCursor(uint8_t row, uint8_t col);
+void setCursorLCD(uint8_t row, uint8_t col);
 //clear screen and set cursor for home
-void clear();
+void clearLCD();
 //scroll screen to the left by one space
-void scrollDisplayLeft();
+void scrollDisplayLeftLCD();
 //scroll screen to the right by one space
-void scrollDisplayRight();
+void scrollDisplayRightLCD();
 //set cursor to the home position
-void home();
+void homeLCD();
 //turn the display off
-void displayOff();
+void displayOffLCD();
 //turn the display on
-void displayOn();
+void displayOnLCD();
 //turn the cursor off
-void cursorOff();
+void cursorOffLCD();
 //turn the cursor on
-void cursorOn();
+void cursorOnLCD();
 //turn blinking off
-void blinkOff();
+void blinkOffLCD();
 //turn blinking on
-void blinkOn();
+void blinkOnLCD();
 //set text flow left to right
-void leftToRight();
+void leftToRightLCD();
 //set text flow right to left
-void rightToLeft();
+void rightToLeftLCD();
 //turn off autoscroll
-void autoscrollOff();
+void autoscrollOffLCD();
 //turn on autoscroll
-void autoscrollOn();
+void autoscrollOnLCD();
 
 
 #endif /* LCD_H_ */

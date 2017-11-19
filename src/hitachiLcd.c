@@ -76,7 +76,7 @@ void initLCD(volatile uint8_t *data_port,  uint8_t screenSize, uint8_t width, ui
 	lcd.displaySetting = (LCD_DISPLAYCONTROL | LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF);
 	write(lcd.displaySetting, INS_REG);
 	//clear display and set cursor to home
-	clear();
+	clearLCD();
 	//setup LCD entry mode
 	lcd.entryModeSet = (LCD_ENTRYMODESET | LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT);
 	write(lcd.entryModeSet, INS_REG);
@@ -84,7 +84,7 @@ void initLCD(volatile uint8_t *data_port,  uint8_t screenSize, uint8_t width, ui
 	SREG = tmpSREG;
 }
 //print string array to display
-void print(char *message)
+void printLCD(char *message)
 {
 	uint8_t tmpSREG = 0;
 
@@ -102,7 +102,7 @@ void print(char *message)
 	SREG = tmpSREG;
 }
 
-void printSpecial(uint8_t message)
+void printSpecialLCD(uint8_t message)
 {
 	uint8_t tmpSREG = 0;
 
@@ -116,7 +116,7 @@ void printSpecial(uint8_t message)
 }
 
 //convert ints to string
-void printInt(int number)
+void printIntLCD(int number)
 {
 	uint8_t tmpSREG = 0;
 
@@ -125,13 +125,13 @@ void printInt(int number)
 
 	char buffer[lcd.screenSize];
 
-	print(ltoa(number, buffer, lcd.base));
+	printLCD(ltoa(number, buffer, lcd.base));
 
 	SREG = tmpSREG;
 }
 
 //convert doubles to string
-void printDec(double number)
+void printDecLCD(double number)
 {
 	uint8_t tmpSREG = 0;
 
@@ -140,13 +140,13 @@ void printDec(double number)
 
 	char buffer[lcd.screenSize];
 
-	print(dtostrf(number, lcd.width, lcd.base, buffer));
+	printLCD(dtostrf(number, lcd.width, lcd.base, buffer));
 
 	SREG = tmpSREG;
 }
 
 //shift display to the left by one character
-void scrollDisplayLeft()
+void scrollDisplayLeftLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -159,7 +159,7 @@ void scrollDisplayLeft()
 }
 
 //shift display to the right by one character
-void scrollDisplayRight()
+void scrollDisplayRightLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -172,7 +172,7 @@ void scrollDisplayRight()
 }
 
 //clear display, also sets cursor at home position, needs a long delay to work.
-void clear()
+void clearLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -186,7 +186,7 @@ void clear()
 }
 
 //set cursor back to home position (0,0)
-void home()
+void homeLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -200,7 +200,7 @@ void home()
 }
 
 //turn off dispaly
-void displayOff()
+void displayOffLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -214,7 +214,7 @@ void displayOff()
 }
 
 //turn on display
-void displayOn()
+void displayOnLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -228,7 +228,7 @@ void displayOn()
 }
 
 //turn off cursor
-void cursorOff()
+void cursorOffLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -242,7 +242,7 @@ void cursorOff()
 }
 
 //turn on cursor
-void cursorOn()
+void cursorOnLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -256,7 +256,7 @@ void cursorOn()
 }
 
 //turn off blinking cursor
-void blinkOff()
+void blinkOffLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -270,7 +270,7 @@ void blinkOff()
 }
 
 //turn of blinking cursor
-void blinkOn()
+void blinkOnLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -284,7 +284,7 @@ void blinkOn()
 }
 
 //set text to flow Left to Right
-void leftToRight()
+void leftToRightLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -298,7 +298,7 @@ void leftToRight()
 }
 
 //set text to flow Right to Left
-void rightToLeft()
+void rightToLeftLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -312,7 +312,7 @@ void rightToLeft()
 }
 
 // This will 'right justify' text from the cursor
-void autoscrollOn()
+void autoscrollOnLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -326,7 +326,7 @@ void autoscrollOn()
 }
 
 // This will 'left justify' text from the cursor
-void autoscrollOff()
+void autoscrollOffLCD()
 {
 	uint8_t tmpSREG = 0;
 
@@ -340,7 +340,7 @@ void autoscrollOff()
 }
 
 //allows a cursor to be set, row is defined and col is used as an offset.
-void setCursor(uint8_t row, uint8_t col)
+void setCursorLCD(uint8_t row, uint8_t col)
 {
 	uint8_t tmpSREG = 0;
 
