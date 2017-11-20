@@ -13,15 +13,19 @@ Allows control over the 4 bit bus of the hitachi based LCD screens.
 
 int main(void)
 {
-	initLCD(&PORTD, 2, 16, 0, 10);
+	struct s_lcd *p_lcd = NULL;
+	
+	p_lcd = initLCD(&PORTD, 2, 16, 0, 10);
 
+	if(p_lcd == NULL) return 0;
+	
 	for(;;)
 	{
-		clearLCD();
+		clearLCD(p_lcd);
 		
 		_delay_ms(1000);
 		
-		printLCD("Hello World");
+		printLCD(p_lcd, "Hello World");
 	}
 }
 ```

@@ -67,47 +67,58 @@
 #define INS_REG	 0
 #define DATA_REG 1
 
-//easy way to change delay for porting
-#define DELAY_MS(x) _delay_ms(x)
-#define DELAY_US(x) _delay_us(x)
+
+struct s_lcd
+{
+	volatile uint8_t *PORT;
+	uint8_t displaySetting;
+	uint8_t entryModeSet;
+	uint8_t functionSet;
+	uint8_t screenSize;
+	uint8_t precision;
+	uint8_t width;
+	uint8_t base;
+};
 
 //initializes port and screen for 4 bit mode
-void initLCD(volatile uint8_t *data_port, uint8_t screenSize, uint8_t width, uint8_t precision, uint8_t base);
+struct s_lcd *initLCD(volatile uint8_t *data_port, uint8_t screenSize, uint8_t width, uint8_t precision, uint8_t base);
 //print
-void printLCD(char *);
-void printIntLCD(int);
-void printDecLCD(double);
-void printSpecialLCD(uint8_t);
+void printLCD(struct s_lcd *p_lcd, char *message);
+void printIntLCD(struct s_lcd *p_lcd, int number);
+void printDecLCD(struct s_lcd *p_lcd, double number);
+void printSpecialLCD(struct s_lcd *p_lcd, uint8_t message);
 //set cursor to a position on screen (columns by rows)
-void setCursorLCD(uint8_t row, uint8_t col);
+void setCursorLCD(struct s_lcd *p_lcd, uint8_t row, uint8_t col);
 //clear screen and set cursor for home
-void clearLCD();
+void clearLCD(struct s_lcd *p_lcd);
 //scroll screen to the left by one space
-void scrollDisplayLeftLCD();
+void scrollDisplayLeftLCD(struct s_lcd *p_lcd);
 //scroll screen to the right by one space
-void scrollDisplayRightLCD();
+void scrollDisplayRightLCD(struct s_lcd *p_lcd);
 //set cursor to the home position
-void homeLCD();
+void homeLCD(struct s_lcd *p_lcd);
 //turn the display off
-void displayOffLCD();
+void displayOffLCD(struct s_lcd *p_lcd);
 //turn the display on
-void displayOnLCD();
+void displayOnLCD(struct s_lcd *p_lcd);
 //turn the cursor off
-void cursorOffLCD();
+void cursorOffLCD(struct s_lcd *p_lcd);
 //turn the cursor on
-void cursorOnLCD();
+void cursorOnLCD(struct s_lcd *p_lcd);
 //turn blinking off
-void blinkOffLCD();
+void blinkOffLCD(struct s_lcd *p_lcd);
 //turn blinking on
-void blinkOnLCD();
+void blinkOnLCD(struct s_lcd *p_lcd);
 //set text flow left to right
-void leftToRightLCD();
+void leftToRightLCD(struct s_lcd *p_lcd);
 //set text flow right to left
-void rightToLeftLCD();
+void rightToLeftLCD(struct s_lcd *p_lcd);
 //turn off autoscroll
-void autoscrollOffLCD();
+void autoscrollOffLCD(struct s_lcd *p_lcd);
 //turn on autoscroll
-void autoscrollOnLCD();
+void autoscrollOnLCD(struct s_lcd *p_lcd);
+//free struct
+void freeLCD(struct s_lcd *p_lcd);
 
 
 #endif /* LCD_H_ */

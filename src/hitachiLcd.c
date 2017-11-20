@@ -18,76 +18,71 @@
 #include "commonDefines.h"
 #include "hitachiLcd.h"
 
-
-typedef struct
-{
-	volatile uint8_t *PORT;
-	uint8_t displaySetting;
-	uint8_t entryModeSet;
-	uint8_t functionSet;
-	uint8_t screenSize;
-	uint8_t precision;
-	uint8_t width;
-	uint8_t base;
-} s_lcd;
-
-static s_lcd lcd;
-void write(uint8_t, int);
-void enablePulse();
+void write(struct s_lcd *p_lcd, uint8_t, int);
+void enablePulse(struct s_lcd *p_lcd);
 
 //setup LCD screen for 4 wire mode Write Only
-void initLCD(volatile uint8_t *data_port,  uint8_t screenSize, uint8_t width, uint8_t precision, uint8_t base)
+struct s_lcd *initLCD(volatile uint8_t *data_port,  uint8_t screenSize, uint8_t width, uint8_t precision, uint8_t base)
 {
 	uint8_t tmpSREG = 0;
+	struct s_lcd *p_temp = NULL;
 
 	tmpSREG = SREG;
 	cli();
+	
+	p_temp = malloc(sizeof(struct s_lcd));
 
-	lcd.screenSize = screenSize;
-	lcd.width = width;
-	lcd.precision = precision;
-	lcd.base = base;
-	lcd.PORT = data_port;
-	*(lcd.PORT - 1) |= 0x3F;
+	if(p_temp == NULL) return NULL;
+	
+	p_temp->screenSize = screenSize;
+	p_temp->width = width;
+	p_temp->precision = precision;
+	p_temp->base = base;
+	p_temp->PORT = data_port;
+	*(p_temp->PORT - 1) |= 0x3F;
 	//setup as defined in Hitachi Datasheet page 46, delays and all
 	//set port bits low
-	*(lcd.PORT) &= ~MASK_8BIT_FF;
+	*(p_temp->PORT) &= ~MASK_8BIT_FF;
 	//set RS to instruction mode
-	*(lcd.PORT) &= ~RS;
-	DELAY_MS(50);
+	*(p_temp->PORT) &= ~RS;
+	_delay_ms(50);
 	//set port values
-	*(lcd.PORT) |= 0x03;
+	*(p_temp->PORT) |= 0x03;
 	//latch values
-	enablePulse();
-	DELAY_MS(5);
+	enablePulse(p_temp);
+	_delay_ms(5);
 	//latch values
-	enablePulse();
-	DELAY_US(200);
+	enablePulse(p_temp);
+	_delay_us(200);
 	//latch values
-	enablePulse();
+	enablePulse(p_temp);
 	//setup for 4 bit mode
-	*(lcd.PORT) |= 0x02;
-	*(lcd.PORT) &= ((MASK_8BIT_FF << 4) | 0x02);
-	enablePulse();
+	*(p_temp->PORT) |= 0x02;
+	*(p_temp->PORT) &= ((MASK_8BIT_FF << 4) | 0x02);
+	enablePulse(p_temp);
 	//function set again, this time once and for all
-	lcd.functionSet = (LCD_FUNCTIONSET | LCD_2LINE | LCD_5x8DOTS | LCD_4BITMODE);
-	write(lcd.functionSet, INS_REG);
+	p_temp->functionSet = (LCD_FUNCTIONSET | LCD_2LINE | LCD_5x8DOTS | LCD_4BITMODE);
+	write(p_temp, p_temp->functionSet, INS_REG);
 	//display control, enable display and setup cursor and blink
-	lcd.displaySetting = (LCD_DISPLAYCONTROL | LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF);
-	write(lcd.displaySetting, INS_REG);
+	p_temp->displaySetting = (LCD_DISPLAYCONTROL | LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF);
+	write(p_temp, p_temp->displaySetting, INS_REG);
 	//clear display and set cursor to home
-	clearLCD();
+	clearLCD(p_temp);
 	//setup LCD entry mode
-	lcd.entryModeSet = (LCD_ENTRYMODESET | LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT);
-	write(lcd.entryModeSet, INS_REG);
+	p_temp->entryModeSet = (LCD_ENTRYMODESET | LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT);
+	write(p_temp, p_temp->entryModeSet, INS_REG);
 
 	SREG = tmpSREG;
+	
+	return p_temp;
 }
 //print string array to display
-void printLCD(char *message)
+void printLCD(struct s_lcd *p_lcd, char *message)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
@@ -95,255 +90,291 @@ void printLCD(char *message)
 	while(*message != '\0')
 	{
 		//write current character from string
-		write((uint8_t)*message, DATA_REG);
+		write(p_lcd, (uint8_t)*message, DATA_REG);
 		message++;
 
 	}
 	SREG = tmpSREG;
 }
 
-void printSpecialLCD(uint8_t message)
+void printSpecialLCD(struct s_lcd *p_lcd, uint8_t message)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
 	//write current character
-	write(message, DATA_REG);
+	write(p_lcd, message, DATA_REG);
 
 	SREG = tmpSREG;
 }
 
 //convert ints to string
-void printIntLCD(int number)
+void printIntLCD(struct s_lcd *p_lcd, int number)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	char buffer[lcd.screenSize];
+	char buffer[p_lcd->screenSize];
 
-	printLCD(ltoa(number, buffer, lcd.base));
+	printLCD(p_lcd, ltoa(number, buffer, p_lcd->base));
 
 	SREG = tmpSREG;
 }
 
 //convert doubles to string
-void printDecLCD(double number)
+void printDecLCD(struct s_lcd *p_lcd, double number)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	char buffer[lcd.screenSize];
+	char buffer[p_lcd->screenSize];
 
-	printLCD(dtostrf(number, lcd.width, lcd.base, buffer));
+	printLCD(p_lcd, dtostrf(number, p_lcd->width, p_lcd->base, buffer));
 
 	SREG = tmpSREG;
 }
 
 //shift display to the left by one character
-void scrollDisplayLeftLCD()
+void scrollDisplayLeftLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-  write((LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVELEFT), INS_REG);
+  write(p_lcd, (LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVELEFT), INS_REG);
 
 	SREG = tmpSREG;
 }
 
 //shift display to the right by one character
-void scrollDisplayRightLCD()
+void scrollDisplayRightLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-  write((LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVERIGHT), INS_REG);
+  write(p_lcd, (LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVERIGHT), INS_REG);
 
 	SREG = tmpSREG;
 }
 
 //clear display, also sets cursor at home position, needs a long delay to work.
-void clearLCD()
+void clearLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	write(LCD_CLEARDISPLAY, INS_REG);
-	DELAY_MS(2);
+	write(p_lcd, LCD_CLEARDISPLAY, INS_REG);
+	_delay_ms(2);
 
 	SREG = tmpSREG;
 }
 
 //set cursor back to home position (0,0)
-void homeLCD()
+void homeLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	write(LCD_RETURNHOME, INS_REG);
-	DELAY_MS(2);
+	write(p_lcd, LCD_RETURNHOME, INS_REG);
+	_delay_ms(2);
 
 	SREG = tmpSREG;
 }
 
 //turn off dispaly
-void displayOffLCD()
+void displayOffLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	lcd.displaySetting &= ~LCD_DISPLAYON;
-	write(lcd.displaySetting, INS_REG);
+	p_lcd->displaySetting &= ~LCD_DISPLAYON;
+	write(p_lcd, p_lcd->displaySetting, INS_REG);
 
 	SREG = tmpSREG;
 }
 
 //turn on display
-void displayOnLCD()
+void displayOnLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	lcd.displaySetting |= LCD_DISPLAYON;
-	write(lcd.displaySetting, INS_REG);
+	p_lcd->displaySetting |= LCD_DISPLAYON;
+	write(p_lcd, p_lcd->displaySetting, INS_REG);
 
 	SREG = tmpSREG;
 }
 
 //turn off cursor
-void cursorOffLCD()
+void cursorOffLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	lcd.displaySetting &= ~LCD_CURSORON;
-	write(lcd.displaySetting, INS_REG);
+	p_lcd->displaySetting &= ~LCD_CURSORON;
+	write(p_lcd, p_lcd->displaySetting, INS_REG);
 
 	SREG = tmpSREG;
 }
 
 //turn on cursor
-void cursorOnLCD()
+void cursorOnLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	lcd.displaySetting |= LCD_CURSORON;
-	write(lcd.displaySetting, INS_REG);
+	p_lcd->displaySetting |= LCD_CURSORON;
+	write(p_lcd, p_lcd->displaySetting, INS_REG);
 
 	SREG = tmpSREG;
 }
 
 //turn off blinking cursor
-void blinkOffLCD()
+void blinkOffLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	lcd.displaySetting &= ~LCD_BLINKON;
-	write(lcd.displaySetting, INS_REG);
+	p_lcd->displaySetting &= ~LCD_BLINKON;
+	write(p_lcd, p_lcd->displaySetting, INS_REG);
 
 	SREG = tmpSREG;
 }
 
 //turn of blinking cursor
-void blinkOnLCD()
+void blinkOnLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	lcd.displaySetting |= LCD_BLINKON;
-	write(lcd.displaySetting, INS_REG);
+	p_lcd->displaySetting |= LCD_BLINKON;
+	write(p_lcd, p_lcd->displaySetting, INS_REG);
 
 	SREG = tmpSREG;
 }
 
 //set text to flow Left to Right
-void leftToRightLCD()
+void leftToRightLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	lcd.entryModeSet |= LCD_ENTRYLEFT;
-	write(lcd.entryModeSet, INS_REG);
+	p_lcd->entryModeSet |= LCD_ENTRYLEFT;
+	write(p_lcd, p_lcd->entryModeSet, INS_REG);
 
 	SREG = tmpSREG;
 }
 
 //set text to flow Right to Left
-void rightToLeftLCD()
+void rightToLeftLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	lcd.entryModeSet &= ~LCD_ENTRYLEFT;
-	write(lcd.entryModeSet, INS_REG);
+	p_lcd->entryModeSet &= ~LCD_ENTRYLEFT;
+	write(p_lcd, p_lcd->entryModeSet, INS_REG);
 
 	SREG = tmpSREG;
 }
 
 // This will 'right justify' text from the cursor
-void autoscrollOnLCD()
+void autoscrollOnLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	lcd.entryModeSet |= LCD_ENTRYSHIFTINCREMENT;
-	write(lcd.entryModeSet, INS_REG);
+	p_lcd->entryModeSet |= LCD_ENTRYSHIFTINCREMENT;
+	write(p_lcd, p_lcd->entryModeSet, INS_REG);
 
 	SREG = tmpSREG;
 }
 
 // This will 'left justify' text from the cursor
-void autoscrollOffLCD()
+void autoscrollOffLCD(struct s_lcd *p_lcd)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
-	lcd.entryModeSet &= ~LCD_ENTRYSHIFTINCREMENT;
-	write(lcd.entryModeSet, INS_REG);
+	p_lcd->entryModeSet &= ~LCD_ENTRYSHIFTINCREMENT;
+	write(p_lcd, p_lcd->entryModeSet, INS_REG);
 
 	SREG = tmpSREG;
 }
 
 //allows a cursor to be set, row is defined and col is used as an offset.
-void setCursorLCD(uint8_t row, uint8_t col)
+void setCursorLCD(struct s_lcd *p_lcd, uint8_t row, uint8_t col)
 {
 	uint8_t tmpSREG = 0;
 
+	if(p_lcd == NULL) return;
+	
 	tmpSREG = SREG;
 	cli();
 
@@ -351,62 +382,73 @@ void setCursorLCD(uint8_t row, uint8_t col)
 	{
 		//line 2
 		case 1:
-			write((LCD_SETDDRAMADDR | (col + 0x40)), INS_REG);
+			write(p_lcd, (LCD_SETDDRAMADDR | (col + 0x40)), INS_REG);
 			break;
 		//line 3
 		case 2:
-			write((LCD_SETDDRAMADDR | (col + 0x14)), INS_REG);
+			write(p_lcd, (LCD_SETDDRAMADDR | (col + 0x14)), INS_REG);
 			break;
 		//line 4
 		case 3:
-			write((LCD_SETDDRAMADDR | (col + 0x00)), INS_REG);
+			write(p_lcd, (LCD_SETDDRAMADDR | (col + 0x00)), INS_REG);
 			break;
 			//line 1
 		case 0:
 		default:
-			write((LCD_SETDDRAMADDR | (col + 0x00)), INS_REG);
+			write(p_lcd, (LCD_SETDDRAMADDR | (col + 0x00)), INS_REG);
 			break;
 	}
 
 	SREG = tmpSREG;
 }
 
-//private command used to write data to data lines
-void write(uint8_t data, int regSelection)
+void freeLCD(struct s_lcd *p_lcd)
 {
+	if(p_lcd == NULL) return;
+	
+	free(p_lcd);
+}
+
+//private command used to write data to data lines
+void write(struct s_lcd *p_lcd, uint8_t data, int regSelection)
+{
+	if(p_lcd == NULL) return;
+	
 	//instruction or data mode
 	if (regSelection)
 	{
-		*(lcd.PORT) |= RS;
+		*(p_lcd->PORT) |= RS;
 	}
 	else
 	{
-		*(lcd.PORT) &= ~RS;
+		*(p_lcd->PORT) &= ~RS;
 	}
 	//send out top nibble
-	*(lcd.PORT) |= data >> 4;
-	*(lcd.PORT) &= ((MASK_8BIT_FF << 4) | (data >> 4));
+	*(p_lcd->PORT) |= data >> 4;
+	*(p_lcd->PORT) &= ((MASK_8BIT_FF << 4) | (data >> 4));
 	//latch data
-	enablePulse();
+	enablePulse(p_lcd);
 	//send out bottom nibble
-	*(lcd.PORT) |= (~(MASK_8BIT_FF << 4) & data);
-	*(lcd.PORT) &= ((MASK_8BIT_FF << 4) | data);
+	*(p_lcd->PORT) |= (~(MASK_8BIT_FF << 4) & data);
+	*(p_lcd->PORT) &= ((MASK_8BIT_FF << 4) | data);
 	//latch data
-	enablePulse();
+	enablePulse(p_lcd);
 }
 
 //routine to pulse enable pin to latch data
-void enablePulse()
+void enablePulse(struct s_lcd *p_lcd)
 {
+	if(p_lcd == NULL) return;
+	
 	//make sure enable is low
-	*(lcd.PORT) &= ~ENABLE;
-	DELAY_US(1);
+	*(p_lcd->PORT) &= ~ENABLE;
+	_delay_us(1);
 	//enable set to high
-	*(lcd.PORT) |= ENABLE;
+	*(p_lcd->PORT) |= ENABLE;
 	// enable pulse must be >450ns
-	DELAY_US(1);
+	_delay_us(1);
 	//enable set to low
-	*(lcd.PORT) &= ~ENABLE;
+	*(p_lcd->PORT) &= ~ENABLE;
 	 // commands need > 37us to settle
-	DELAY_US(100);
+	_delay_us(100);
 }
